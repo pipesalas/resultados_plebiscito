@@ -6,7 +6,8 @@ import numpy as np
 def main():
     st.title('Exploración de resultados del plebiscito para una nueva constitución en Chile :balloon:')
     df = cargamos_datos_consolidados()
-    st.dataframe(df)
+    st.write('Contamos con los datos: (además de cada polygon)')
+    st.write(df[df.columns[:-1]].head())
     #st.write(df.head())
     
     
@@ -17,7 +18,7 @@ def cargamos_datos_votacion():
     return df
 @st.cache
 def cargamos_datos_comuna():
-    gdf_comunas = gpd.read_file('/Users/pipe/Documents/Spike/CR2/datos/mapas_censo/Comunas/comunas.shp')
+    gdf_comunas = gpd.read_file('./Comunas/comunas.shp')
     gdf_comunas.rename(columns= {'cod_comuna': 'cod_com'}, inplace=True)
     return gdf_comunas
 
