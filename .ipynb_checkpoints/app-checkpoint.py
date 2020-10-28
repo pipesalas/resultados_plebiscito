@@ -3,6 +3,7 @@ import geopandas as gpd
 import streamlit as st
 import pandas as pd
 import numpy as np
+import descartes
 
 def main():
     st.title('Exploración de resultados del plebiscito para una nueva constitución en Chile :balloon:')
