@@ -7,7 +7,7 @@ import descartes
 
 def main():
     st.title('Exploración de resultados del plebiscito para una nueva constitución en Chile :balloon:')
-    st.subheader('Para ello utilizaremos la base de datos generada por ')
+    st.subheader('Para ello utilizaremos la base de datos generada por academiaespacial')
     st.write('Ojo, sacaremos Isla de Pascua y Juan Fernandez para hacer mejor los mapitas')
     
     
