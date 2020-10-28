@@ -19,12 +19,26 @@ def main():
     st.markdown('**Seleccionamos una variable a mirar**')
     col1, col2 = st.beta_columns(2)
     with col1:
-        columnas_posibles = ['apruebo','rechazo', 'blancos', 'nulos', 'p_apruebo', 'p_rechazo', 'part_2020', 'part_2017']
-        col = st.selectbox('', columnas_posibles, index=4)
+        columnas_posibles = {'Total votos apruebo': 'apruebo',
+                             'Total votos rechazo': 'rechazo', 
+                             'Total votos blancos': 'blancos',
+                             'Total votos nulos': 'nulos',
+                             'Porcentaje de votos apruebo': 'p_apruebo', 
+                             'Porcentaje de votos rechazo': 'p_rechazo',
+                             'Participación elecciones 2020': 'part_2020',
+                             'Participación elecciones 2017' :'part_2017'}
         
+        col_linda = st.selectbox('', list(columnas_posibles.keys()), index=4)
+        col = columnas_posibles[col_linda]
     
     with st.beta_expander('Miramos el mapa nacional'):
-        plot_mapita(gdf, col, regional=False)
+        col1, col2 = st.beta_columns(2)
+        with col1:
+            plot_mapita(gdf, 'p_apruebo', 'Porcentaje de apruebo por comuna', regional=False)
+        with col2:
+            plot_mapita(gdf, 'dif_pct', 'Diferencia en % de participación c/r a 2017', regional=False)
+
+        
     
 
     with st.beta_expander('Miramos una región en particular'):
@@ -35,21 +49,37 @@ def main():
         provincias = list(gdf_regional.provincia.unique())
         provincia_seleccionada = st.selectbox('Seleccionamos una provincia', ['todas'] + provincias)
         if provincia_seleccionada == 'todas':
-            plot_mapita(gdf_regional, col, figsize=(15,25))
+            col1, col2 = st.beta_columns(2)
+            with col1:
+                plot_mapita(gdf_regional, 'p_apruebo', 'Porcentaje de apruebo por comuna', figsize=(15,25))
+            with col2:
+                plot_mapita(gdf_regional, 'dif_pct', 'Diferencia en % de participación c/r a 2017', figsize=(15,25))
+
+                        
         else:
             gdf_provincial = gdf_regional.query(f'provincia=="{provincia_seleccionada}"')
-            plot_mapita(gdf_provincial, col, figsize=(15,25))
+            col1, col2 = st.beta_columns(2)
+            with col1:
+                plot_mapita(gdf_provincial, 'p_apruebo', 'Porcentaje de apruebo por comuna', figsize=(15,25))
+            with col2:
+                plot_mapita(gdf_provincial, 'dif_pct', 'Diferencia en % de participación c/r a 2017', figsize=(15,25))
 
     
 
 def plot_mapita(gdf : gpd.GeoDataFrame,
                 col : str,
+                title : str,
                 figsize=(20,40),
                 regional=True):
     fig, ax = plt.subplots(figsize=figsize)
     gdf.plot(column=col, ax=ax, cmap='RdBu')
+    plt.title(title)
     if regional:
-        gdf.apply(lambda x: ax.annotate(s=x.comuna, xy=x.geometry.centroid.coords[0], ha='center', color='white', ),axis=1);
+        gdf.apply(lambda x: ax.annotate(text=x.comuna +' '+ str(int(100*np.round(x[col],2))) + '%',
+                                        xy=x.geometry.centroid.coords[0], 
+                                        ha='center', 
+                                        color='white')
+                  ,axis=1);
 
     ax.set_axis_off()
     st.pyplot(fig)
@@ -83,6 +113,8 @@ def cargamos_datos_consolidados(sacamos_islas : int = True):
     if sacamos_islas:
         islas = ['juan fernandez', 'isla de pascua']
         df_consolidado = df_consolidado.query(f'comuna not in {islas}')
+    df_consolidado['dif_pct'] = df_consolidado.eval("(part_2020 - part_2017)/part_2017")
+
     return df_consolidado
 
     
