@@ -13,7 +13,7 @@ def main():
     gdf = gpd.GeoDataFrame(df,geometry='geometry')
     
     with st.beta_expander('Miramos el mapa nacional'):
-        plot_mapita(gdf)
+        plot_mapita(gdf, regional=False)
     
 
     with st.beta_expander('Miramos una región en particular'):
@@ -23,11 +23,14 @@ def main():
         gdf_regional = gdf.query(f'region=="{region_seleccionada}"')
         plot_mapita(gdf_regional, figsize=(10,20))
     
-def plot_mapita(gdf : gpd.GeoDataFrame, figsize=(20,40)):
 
+def plot_mapita(gdf : gpd.GeoDataFrame,
+                figsize=(20,40),
+                regional=True):
     fig, ax = plt.subplots(figsize=figsize)
     gdf.plot(column='apruebo', ax=ax)
-    gdf.apply(lambda x: ax.annotate(s=x.comuna, xy=x.geometry.centroid.coords[0], ha='center', color='white'),axis=1);
+    if regional:
+        gdf.apply(lambda x: ax.annotate(s=x.comuna, xy=x.geometry.centroid.coords[0], ha='center', color='white'),axis=1);
 
     ax.set_axis_off()
     st.pyplot(fig)
@@ -54,7 +57,6 @@ def cargamos_datos_comuna():
 def cargamos_datos_consolidados(sacamos_islas : int = True):
     df = cargamos_datos_votacion()
     gdf = cargamos_datos_comuna()
-    st.write(gdf.columns)
     df_consolidado = df.merge(gdf[['region', 'provincia', 'geometry','cod_com']], on=['cod_com'])
     
     if sacamos_islas:
