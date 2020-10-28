@@ -8,7 +8,8 @@ import descartes
 def main():
     st.title('Exploración de resultados del plebiscito para una nueva constitución en Chile :balloon:')
     st.subheader('Para ello utilizaremos la base de datos generada por academiaespacial')
-    st.write('Ojo, sacaremos Isla de Pascua y Juan Fernandez para hacer mejor los mapitas')
+    texto('Ojo, sacaremos Isla de Pascua y Juan Fernandez para hacer mejor los mapitas', 14)
+    texto(' ')
     
     
     df = cargamos_datos_consolidados()
@@ -34,10 +35,10 @@ def main():
         provincias = list(gdf_regional.provincia.unique())
         provincia_seleccionada = st.selectbox('Seleccionamos una provincia', ['todas'] + provincias)
         if provincia_seleccionada == 'todas':
-            plot_mapita(gdf_regional, col, figsize=(10,20))
+            plot_mapita(gdf_regional, col, figsize=(15,25))
         else:
             gdf_provincial = gdf_regional.query(f'provincia=="{provincia_seleccionada}"')
-            plot_mapita(gdf_provincial, col, figsize=(10,20))
+            plot_mapita(gdf_provincial, col, figsize=(15,25))
 
     
 
@@ -80,10 +81,50 @@ def cargamos_datos_consolidados(sacamos_islas : int = True):
     df_consolidado = df.merge(gdf[['region', 'provincia', 'geometry','cod_com']], on=['cod_com'])
     
     if sacamos_islas:
-        islas = ['juan fernandez', 'isla de pascuaq']
+        islas = ['juan fernandez', 'isla de pascua']
         df_consolidado = df_consolidado.query(f'comuna not in {islas}')
     return df_consolidado
 
     
+def texto(texto : str = 'holi',
+          nfont : int = 16,
+          color : str = 'black',
+          line_height : float =None):
+    
+
+    st.markdown(
+        body=generate_html(
+            text=texto,
+            color=color,
+            font_size=f"{nfont}px",
+            line_height=line_height
+        ),
+        unsafe_allow_html=True,
+        )
+    
+COLOR_MAP = {"default": "#262730",
+             "pink": "#E22A5B",
+             "purple": "#985FFF",}
+def generate_html(
+    text,
+    color=COLOR_MAP["default"],
+    bold=False,
+    font_family=None,
+    font_size=None,
+    line_height=None,
+    tag="div",
+):
+    if bold:
+        text = f"<strong>{text}</strong>"
+    css_style = f"color:{color};"
+    if font_family:
+        css_style += f"font-family:{font_family};"
+    if font_size:
+        css_style += f"font-size:{font_size};"
+    if line_height:
+        css_style += f"line-height:{line_height};"
+
+    return f"<{tag} style={css_style}>{text}</{tag}>"
+
     
 main()
