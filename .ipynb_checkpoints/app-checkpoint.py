@@ -31,7 +31,14 @@ def main():
         region_seleccionada = st.selectbox('Seleccionamos una región', lista_regiones, index=12)
         
         gdf_regional = gdf.query(f'region=="{region_seleccionada}"')
-        plot_mapita(gdf_regional, col, figsize=(10,20))
+        provincias = list(gdf_regional.provincia.unique())
+        provincia_seleccionada = st.selectbox('Seleccionamos una provincia', ['todas'] + provincias)
+        if provincia_seleccionada == 'todas':
+            plot_mapita(gdf_regional, col, figsize=(10,20))
+        else:
+            gdf_provincial = gdf_regional.query(f'provincia=="{provincia_seleccionada}"')
+            plot_mapita(gdf_provincial, col, figsize=(10,20))
+
     
 
 def plot_mapita(gdf : gpd.GeoDataFrame,
@@ -41,7 +48,7 @@ def plot_mapita(gdf : gpd.GeoDataFrame,
     fig, ax = plt.subplots(figsize=figsize)
     gdf.plot(column=col, ax=ax, cmap='RdBu')
     if regional:
-        gdf.apply(lambda x: ax.annotate(s=x.comuna, xy=x.geometry.centroid.coords[0], ha='center', color='white'),axis=1);
+        gdf.apply(lambda x: ax.annotate(s=x.comuna, xy=x.geometry.centroid.coords[0], ha='center', color='white', ),axis=1);
 
     ax.set_axis_off()
     st.pyplot(fig)
@@ -55,6 +62,8 @@ def cargamos_datos_votacion():
     df.rename(columns={col: col.lower() for col in df.columns}, inplace=True)
     for col in ['p_apruebo','p_rechazo', 'part_2017','part_2020']:
         df[col] = df[col].apply(lambda x: x.replace(',','.')).astype(float)
+    for col in ['comuna']:
+        df[col] = df[col].apply(lambda x: x.lower())
     return df
 
 @st.cache
@@ -71,7 +80,7 @@ def cargamos_datos_consolidados(sacamos_islas : int = True):
     df_consolidado = df.merge(gdf[['region', 'provincia', 'geometry','cod_com']], on=['cod_com'])
     
     if sacamos_islas:
-        islas = ['JUAN FERNANDEZ', 'ISLA DE PASCUA']
+        islas = ['juan fernandez', 'isla de pascuaq']
         df_consolidado = df_consolidado.query(f'comuna not in {islas}')
     return df_consolidado
 
