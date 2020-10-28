@@ -7,28 +7,39 @@ import descartes
 
 def main():
     st.title('Exploración de resultados del plebiscito para una nueva constitución en Chile :balloon:')
+    st.subheader('Para ello utilizaremos la base de datos generada por ')
     st.write('Ojo, sacaremos Isla de Pascua y Juan Fernandez para hacer mejor los mapitas')
+    
+    
     df = cargamos_datos_consolidados()
-    #st.write(df[df.columns[:-1]].head())
     gdf = gpd.GeoDataFrame(df,geometry='geometry')
     
+    
+    st.markdown('**Seleccionamos una variable a mirar**')
+    col1, col2 = st.beta_columns(2)
+    with col1:
+        columnas_posibles = ['apruebo','rechazo', 'blancos', 'nulos', 'p_apruebo', 'p_rechazo', 'part_2020', 'part_2017']
+        col = st.selectbox('', columnas_posibles, index=4)
+        
+    
     with st.beta_expander('Miramos el mapa nacional'):
-        plot_mapita(gdf, regional=False)
+        plot_mapita(gdf, col, regional=False)
     
 
     with st.beta_expander('Miramos una región en particular'):
         lista_regiones = gdf.region.unique()
-        region_seleccionada = st.selectbox('Seleccionamos una región', lista_regiones)
+        region_seleccionada = st.selectbox('Seleccionamos una región', lista_regiones, index=12)
         
         gdf_regional = gdf.query(f'region=="{region_seleccionada}"')
-        plot_mapita(gdf_regional, figsize=(10,20))
+        plot_mapita(gdf_regional, col, figsize=(10,20))
     
 
 def plot_mapita(gdf : gpd.GeoDataFrame,
+                col : str,
                 figsize=(20,40),
                 regional=True):
     fig, ax = plt.subplots(figsize=figsize)
-    gdf.plot(column='apruebo', ax=ax)
+    gdf.plot(column=col, ax=ax, cmap='RdBu')
     if regional:
         gdf.apply(lambda x: ax.annotate(s=x.comuna, xy=x.geometry.centroid.coords[0], ha='center', color='white'),axis=1);
 
@@ -36,14 +47,14 @@ def plot_mapita(gdf : gpd.GeoDataFrame,
     st.pyplot(fig)
     
     
-
-    
     
     
 @st.cache
 def cargamos_datos_votacion():
     df = pd.read_csv('BBDD Plebiscito 2020 - CPE UDLA en base a SERVEL, 2020 - 2020.csv')
     df.rename(columns={col: col.lower() for col in df.columns}, inplace=True)
+    for col in ['p_apruebo','p_rechazo', 'part_2017','part_2020']:
+        df[col] = df[col].apply(lambda x: x.replace(',','.')).astype(float)
     return df
 
 @st.cache
