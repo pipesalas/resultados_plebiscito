@@ -49,20 +49,14 @@ def main():
         provincias = list(gdf_regional.provincia.unique())
         provincia_seleccionada = st.selectbox('Seleccionamos una provincia', ['todas'] + provincias)
         if provincia_seleccionada == 'todas':
-            col1, col2 = st.beta_columns(2)
-            with col1:
-                plot_mapita(gdf_regional, 'p_apruebo', 'Porcentaje de apruebo por comuna', figsize=(15,25))
-            with col2:
-                plot_mapita(gdf_regional, 'dif_pct', 'Diferencia en % de participación c/r a 2017', figsize=(15,25))
 
+            plot_mapita(gdf_regional, 'p_apruebo', 'Porcentaje de apruebo por comuna', figsize=(10,20))
+            plot_mapita(gdf_regional, 'dif_pct', 'Diferencia en % de participación c/r a 2017', figsize=(10,20))
                         
         else:
             gdf_provincial = gdf_regional.query(f'provincia=="{provincia_seleccionada}"')
-            col1, col2 = st.beta_columns(2)
-            with col1:
-                plot_mapita(gdf_provincial, 'p_apruebo', 'Porcentaje de apruebo por comuna', figsize=(15,25))
-            with col2:
-                plot_mapita(gdf_provincial, 'dif_pct', 'Diferencia en % de participación c/r a 2017', figsize=(15,25))
+            plot_mapita(gdf_provincial, 'p_apruebo', 'Porcentaje de apruebo por comuna', figsize=(10,20))
+            plot_mapita(gdf_provincial, 'dif_pct', 'Diferencia en % de participación c/r a 2017', figsize=(10,20))
 
     
 
